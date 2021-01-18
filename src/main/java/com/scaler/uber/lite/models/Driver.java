@@ -1,6 +1,5 @@
 package com.scaler.uber.lite.models;
 
-import com.scaler.uber.lite.exceptions.UnapprovedDriverException;
 import com.scaler.uber.lite.utils.DateUtils;
 import lombok.*;
 

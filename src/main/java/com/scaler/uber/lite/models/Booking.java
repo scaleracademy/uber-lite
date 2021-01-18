@@ -4,8 +4,6 @@ package com.scaler.uber.lite.models;
  * @author mohit@interviewbit.com on 05/01/21
  **/
 
-import com.scaler.uber.lite.exceptions.InvalidActionForBookingStateException;
-import com.scaler.uber.lite.exceptions.InvalidOTPException;
 import lombok.*;
 
 import javax.persistence.*;
@@ -77,52 +75,5 @@ public class Booking extends BaseEntity {
 
     @OneToOne
     private OTP rideStartOTP; // a cron job deleted otps of completed rides
-
-    public void startRide(OTP otp, int rideStartOTPExpiryMinutes) {
-        if (!bookingStatus.equals(BookingStatus.CAB_ARRIVED)) {
-            throw new InvalidActionForBookingStateException("Cannot start the ride before the driver has reached the pickup point");
-        }
-        if (!rideStartOTP.validateEnteredOTP(otp))
-            throw new InvalidOTPException();
-        startTime = new Date();
-        passenger.setActiveBooking(this);
-        bookingStatus = BookingStatus.IN_RIDE;
-    }
-
-    public void endRide() {
-        if (!bookingStatus.equals(BookingStatus.IN_RIDE)) {
-            throw new InvalidActionForBookingStateException("The ride hasn't started yet");
-        }
-        driver.setActiveBooking(null);
-        endTime = new Date();
-        passenger.setActiveBooking(null);
-        bookingStatus = BookingStatus.COMPLETED;
-    }
-
-    public boolean canChangeRoute() {
-        return bookingStatus.equals(BookingStatus.ASSIGNING_DRIVER)
-                || bookingStatus.equals(BookingStatus.CAB_ARRIVED)
-                || bookingStatus.equals(BookingStatus.IN_RIDE)
-                || bookingStatus.equals(BookingStatus.REACHING_PICKUP_LOCATION);
-    }
-
-    public boolean needsDriver() {
-        return bookingStatus.equals(BookingStatus.ASSIGNING_DRIVER);
-    }
-
-    public ExactLocation getPickupLocation() {
-        return route.get(0);
-    }
-
-    public void cancel() {
-        if (!(bookingStatus.equals(BookingStatus.REACHING_PICKUP_LOCATION)
-                || bookingStatus.equals(BookingStatus.ASSIGNING_DRIVER)
-                || bookingStatus.equals(BookingStatus.CAB_ARRIVED))) {
-            throw new InvalidActionForBookingStateException("Cannot cancel the booking now.");
-        }
-        bookingStatus = BookingStatus.CANCELLED;
-        driver = null;
-        notifiedDrivers.clear();
-    }
 }
 
